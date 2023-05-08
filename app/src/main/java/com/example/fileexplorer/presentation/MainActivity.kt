@@ -2,10 +2,13 @@ package com.example.fileexplorer.presentation
 
 import android.Manifest
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.format.Formatter
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.fileexplorer.Constants
+import com.example.fileexplorer.R
 import com.example.fileexplorer.databinding.ActivityMainBinding
 import com.example.fileexplorer.presentation.recycler.FilesListAdapter
 import com.karumi.dexter.Dexter
@@ -14,10 +17,7 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import java.io.File
-import java.nio.file.FileSystem
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,36 +27,105 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var fileAdapter: FilesListAdapter
     private lateinit var currentFile: File
+    private lateinit var viewModel: MainViewModel
+
+    private var showModifiedFiles = false
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        setupRecyclerView()
+
         runtimePermission()
 
+        viewModel.getModifiedFiles()
+
         setOnClickListeners()
+        setupObserver()
 
 
     }
 
+    private fun setupRecyclerView() {
+        fileAdapter = FilesListAdapter()
+        binding.rvFiles.adapter = fileAdapter
+        binding.rvFiles.setHasFixedSize(true)
+        fileAdapter.fileItemOnClickListener = { file ->
+            if (file.isDirectory) {
+                switchBackButtonEnabled(true)
+                moveToDirectory(file)
+            }
+        }
+        fileAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+
+            override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+                binding.rvFiles.scrollToPosition(0)
+            }
+        })
+    }
+
     private fun setOnClickListeners() {
         binding.storageAll.setOnClickListener {
-            binding.storageAll.cardElevation = 8f
-            binding.storageChanged.cardElevation = 2f
+            showAllFiles()
         }
         binding.storageChanged.setOnClickListener {
-            binding.storageAll.cardElevation = 2f
-            binding.storageChanged.cardElevation = 8f
+            showChangedFiles()
         }
         binding.backButton.setOnClickListener {
             currentFile.parentFile?.let { parent ->
-                if(parent.absolutePath != "/")
-                    moveToDirectory(parent)
-                else {
-                    binding.backButton.setColorFilter(Color.GRAY)
-                    binding.backButton.isEnabled = false
-                }
+                moveToDirectory(parent)
             }
+        }
+        binding.buttonSortDirection.setOnClickListener { view ->
+            viewModel.switchSortDirection()
+            if(viewModel.fromMaxToMin) {
+                view.setBackgroundResource(R.drawable.sort_down)
+            }
+            else{
+                view.setBackgroundResource(R.drawable.sort_up)
+            }
+        }
+        binding.buttonSort.setOnClickListener {
+            val filterFragment = FilterDialog(viewModel.getFilter())
+            filterFragment.onApplyFunc = {
+                viewModel.setFilter(filterFragment.filterParameter)
+            }
+            filterFragment.show(supportFragmentManager, "dialog")
+        }
+    }
+
+    private fun showAllFiles() {
+        binding.storageAll.cardElevation = Constants.SELECTED_ELEVATION_FLOAT
+        binding.storageChanged.cardElevation = Constants.DEFAULT_ELEVATION_FLOAT
+        showModifiedFiles = false
+        switchBackButtonEnabled(true)
+        moveToDirectory(currentFile)
+    }
+
+    private fun showChangedFiles() {
+        binding.storageAll.cardElevation = Constants.DEFAULT_ELEVATION_FLOAT
+        binding.storageChanged.cardElevation = Constants.SELECTED_ELEVATION_FLOAT
+        showModifiedFiles = true
+        if(viewModel.modifiedFiles.value != null){
+            displayFiles(viewModel.modifiedFiles.value ?: ArrayList())
+        }
+        switchBackButtonEnabled(false)
+        binding.pathTv.text = Constants.EMPTY_STRING
+    }
+
+    private fun setupObserver() {
+        viewModel.modifiedFiles.observe(this) { files ->
+            if (showModifiedFiles) {
+                displayFiles(files ?: ArrayList())
+            }
+        }
+        viewModel.filesToShow.observe(this){ files ->
+            fileAdapter.submitList(files)
         }
     }
 
@@ -66,7 +135,8 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         ).withListener(object : MultiplePermissionsListener {
             override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
-                displayFiles()
+                val internalStorage = System.getenv(Constants.EXTERNAL_STORAGE)
+                moveToDirectory(File(internalStorage ?: throw Exception(Constants.NO_PATH_ERROR)))
             }
 
             override fun onPermissionRationaleShouldBeShown(
@@ -79,39 +149,34 @@ class MainActivity : AppCompatActivity() {
         }).check()
     }
 
-    private fun findFiles(file: File): ArrayList<File> {
-        val result = ArrayList<File>()
-        val files = file.listFiles()
-        if (files != null) {
-            result.addAll(files)
-        }
 
-        return result
+    private fun moveToDirectory(file: File) {
+        currentFile = file
+        if (currentFile.parentFile?.absolutePath == "/") {
+            switchBackButtonEnabled(false)
+        }
+        binding.pathTv.text = currentFile.absolutePath
+        binding.pathTv.isSelected = true
+        displayFiles(viewModel.findFiles(currentFile))
     }
 
-    private fun displayFiles() {
-        val internalStorage = System.getenv("EXTERNAL_STORAGE")
-        currentFile = File(internalStorage ?: throw Exception("no path name"))
-
-        binding.pathTv.text = currentFile.absolutePath
-
-        fileAdapter = FilesListAdapter()
-        binding.rvFiles.adapter = fileAdapter
-        fileAdapter.submitList(findFiles(currentFile))
-
-        binding.rvFiles.setHasFixedSize(true)
-        fileAdapter.fileItemOnClickListener = { file ->
-            if (file.isDirectory) {
-                moveToDirectory(file)
+    private fun switchBackButtonEnabled(enabled: Boolean) {
+        with(binding) {
+            if (!enabled) {
+                backButton.setColorFilter(Color.GRAY)
+                backButton.isEnabled = false
+            } else {
+                backButton.setColorFilter(Color.YELLOW)
+                backButton.isEnabled = true
             }
         }
     }
 
-    private fun moveToDirectory(file: File) {
-        currentFile = file
-        binding.pathTv.text = file.absolutePath
-        binding.pathTv.isSelected = true
-        fileAdapter.submitList(findFiles(file))
+    private fun displayFiles(files: ArrayList<File>){
+        viewModel.displayFiles(files)
     }
 
 }
+
+
+

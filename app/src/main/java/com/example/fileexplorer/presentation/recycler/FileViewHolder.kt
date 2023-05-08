@@ -1,7 +1,6 @@
 package com.example.fileexplorer.presentation.recycler
 
 import android.text.format.Formatter
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -10,14 +9,18 @@ import com.example.fileexplorer.R
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlin.io.path.readAttributes
 
 class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
     private var name: TextView = view.findViewById(R.id.tvFileName)
     private var size: TextView = view.findViewById(R.id.tvFileSize)
+    private var time: TextView = view.findViewById(R.id.tvFileCreationTime)
     private var picture: ImageView = view.findViewById(R.id.imgFileType)
 
     fun setName(file: File) {
-        Log.i("Имя", file.name)
         name.isSelected = true
         name.text = file.name
         picture.setImageResource(getPictureByFileType(file))
@@ -36,6 +39,15 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
             sizeString += ", $itemsCount элем."
         }
         size.text = sizeString
+    }
+
+    fun setTime(file: File){
+        val attr =
+            Paths.get(file.absolutePath).readAttributes<BasicFileAttributes>()
+        val zonedTime = attr.creationTime().toInstant().atZone(ZoneId.systemDefault())
+        val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yy - HH:mm")
+        time.text = zonedTime.format(formatter)
+
     }
 
     private fun getPictureByFileType(file: File): Int {

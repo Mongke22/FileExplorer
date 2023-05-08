@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            style="@style/filterTitleText"
+            android:text="Сортировать по:" />
+
+        <RadioGroup
+            android:id="@+id/rgFilterParameters"
+            style="@style/defaultRadioGroup">
+
+            <RadioButton
+                android:id="@+id/rbOptionFileType"
+                style="@style/defaultRadioButton"
+                android:text="Типу файла" />
+
+            <RadioButton
+                android:id="@+id/rbOptionSize"
+                style="@style/defaultRadioButton"
+                android:text="Размеру" />
+
+            <RadioButton
+                android:id="@+id/rbOptionName"
+                style="@style/defaultRadioButton"
+                android:text="Имени" />
+
+            <RadioButton
+                android:id="@+id/rbOptionDate"
+                style="@style/defaultRadioButton"
+                android:text="Дате создания" />
+        </RadioGroup>
+
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
