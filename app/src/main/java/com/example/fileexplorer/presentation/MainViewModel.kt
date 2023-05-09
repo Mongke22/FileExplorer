@@ -29,8 +29,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val filesToShow: LiveData<ArrayList<File>>
         get() = _filesToShow
 
-    var fromMaxToMin = true
-    private var filter = Filter.FileType
+    var fromMaxToMin = false
+    private var filter = Filter.FileName
     private var comparator =
         Comparator { file1: File, file2: File -> file1.name.compareTo(file2.name) }
 
@@ -93,8 +93,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun displayFiles(files: ArrayList<File>) {
         Log.i("files", files.toString())
         if (fromMaxToMin)
-            files.sortWith(comparator)
-        else files.sortWith(comparator.reversed())
+            files.sortWith(comparator.reversed())
+        else files.sortWith(comparator)
         _filesToShow.value = files
     }
 

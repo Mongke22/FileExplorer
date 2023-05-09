@@ -23,22 +23,22 @@
             <RadioButton
                 android:id="@+id/rbOptionFileType"
                 style="@style/defaultRadioButton"
-                android:text="Типу файла" />
+                android:text="@string/option_type" />
 
             <RadioButton
                 android:id="@+id/rbOptionSize"
                 style="@style/defaultRadioButton"
-                android:text="Размеру" />
+                android:text="@string/option_size" />
 
             <RadioButton
                 android:id="@+id/rbOptionName"
                 style="@style/defaultRadioButton"
-                android:text="Имени" />
+                android:text="@string/option_name"/>
 
             <RadioButton
                 android:id="@+id/rbOptionDate"
                 style="@style/defaultRadioButton"
-                android:text="Дате создания" />
+                android:text="@string/option_date" />
         </RadioGroup>
 
 

@@ -19,24 +19,6 @@ class FilesListAdapter : ListAdapter<File, FileViewHolder>(FilesDiffUtilCallBack
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
         val file = getItem(position)
-        Log.i("hashcode", "${file.name}:${file.hashCode()}")
-        if(file.name == "NewTextFile1.txt"){
-            try {
-                FileWriter(file.absolutePath, false).use { writer ->
-                    // запись всей строки
-                    val text = "Hello цйцуйцуваывп!"
-                    writer.write(text)
-                    // запись по символам
-                    writer.append('\n')
-                    writer.append('E')
-                    writer.flush()
-                }
-            } catch (ex: Exception) {
-                Log.i("exception",ex.message?:"")
-            }
-            Log.i("hashcode", "${file.name}:${file.hashCode()}")
-        }
-
         holder.setName(file)
         holder.setSize(file)
         holder.setTime(file)

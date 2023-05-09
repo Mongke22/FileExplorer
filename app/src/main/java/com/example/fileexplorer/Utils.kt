@@ -1,5 +1,6 @@
 package com.example.fileexplorer
 
+import android.os.Environment
 import java.io.File
 
 
@@ -13,6 +14,8 @@ object Constants{
     const val DEFAULT_ELEVATION_FLOAT = 2f
     const val EXTERNAL_STORAGE = "EXTERNAL_STORAGE"
     const val NO_PATH_ERROR = "no path name"
+
+    val ROOT_FILE = Environment.getExternalStorageDirectory()
 
 
 }

@@ -1,6 +1,7 @@
 package com.example.fileexplorer.data
 
 import android.app.Application
+import com.example.fileexplorer.Constants
 import com.example.fileexplorer.data.database.AppDataBase
 import com.example.fileexplorer.data.database.FileDbModel
 import com.example.fileexplorer.domain.FileRepository
@@ -16,10 +17,7 @@ class FileRepositoryImpl(private val application: Application) : FileRepository 
     override suspend fun getModifiedFiles(): ArrayList<File> {
         modifiedFiles.clear()
 
-        val internalStorage = System.getenv("EXTERNAL_STORAGE")
-        val file = File(internalStorage ?: throw Exception("no path name"))
-
-        checkIfModified(file)
+        checkIfModified(Constants.ROOT_FILE)
 
         return modifiedFiles
     }

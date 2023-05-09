@@ -52,7 +52,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="@dimen/margin_between_elements"
-                android:background="@drawable/sort_down"
+                android:background="@drawable/sort_up"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/buttonSort"
                 app:layout_constraintTop_toTopOf="parent" />

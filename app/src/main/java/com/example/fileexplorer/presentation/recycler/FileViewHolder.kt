@@ -41,7 +41,7 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         size.text = sizeString
     }
 
-    fun setTime(file: File){
+    fun setTime(file: File) {
         val attr =
             Paths.get(file.absolutePath).readAttributes<BasicFileAttributes>()
         val zonedTime = attr.creationTime().toInstant().atZone(ZoneId.systemDefault())
@@ -73,6 +73,8 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
             R.drawable.doc
         } else if (file.name.lowercase().endsWith(".apk")) {
             R.drawable.apk
+        } else if (file.name.lowercase().endsWith(".ogg")) {
+            R.drawable.ogg
         } else {
             R.drawable.unknown
         }

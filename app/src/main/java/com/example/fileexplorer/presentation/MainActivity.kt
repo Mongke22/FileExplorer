@@ -1,8 +1,12 @@
 package com.example.fileexplorer.presentation
 
 import android.Manifest
+import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
 
     private var showModifiedFiles = false
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,10 +86,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.buttonSortDirection.setOnClickListener { view ->
             viewModel.switchSortDirection()
-            if(viewModel.fromMaxToMin) {
+            if (viewModel.fromMaxToMin) {
                 view.setBackgroundResource(R.drawable.sort_down)
-            }
-            else{
+            } else {
                 view.setBackgroundResource(R.drawable.sort_up)
             }
         }
@@ -111,8 +113,8 @@ class MainActivity : AppCompatActivity() {
         binding.storageAll.cardElevation = Constants.DEFAULT_ELEVATION_FLOAT
         binding.storageChanged.cardElevation = Constants.SELECTED_ELEVATION_FLOAT
         showModifiedFiles = true
-        if(viewModel.modifiedFiles.value != null){
-            displayFiles(viewModel.modifiedFiles.value ?: ArrayList())
+        if (viewModel.modifiedFiles.value != null) {
+            viewModel.displayFiles(viewModel.modifiedFiles.value ?: ArrayList())
         }
         switchBackButtonEnabled(false)
         binding.pathTv.text = Constants.EMPTY_STRING
@@ -121,10 +123,10 @@ class MainActivity : AppCompatActivity() {
     private fun setupObserver() {
         viewModel.modifiedFiles.observe(this) { files ->
             if (showModifiedFiles) {
-                displayFiles(files ?: ArrayList())
+                viewModel.displayFiles(files ?: ArrayList())
             }
         }
-        viewModel.filesToShow.observe(this){ files ->
+        viewModel.filesToShow.observe(this) { files ->
             fileAdapter.submitList(files)
         }
     }
@@ -135,8 +137,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         ).withListener(object : MultiplePermissionsListener {
             override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
-                val internalStorage = System.getenv(Constants.EXTERNAL_STORAGE)
-                moveToDirectory(File(internalStorage ?: throw Exception(Constants.NO_PATH_ERROR)))
+                moveToDirectory(Constants.ROOT_FILE)
             }
 
             override fun onPermissionRationaleShouldBeShown(
@@ -152,12 +153,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveToDirectory(file: File) {
         currentFile = file
-        if (currentFile.parentFile?.absolutePath == "/") {
+        if (currentFile.absolutePath == Constants.ROOT_FILE.absolutePath) {
             switchBackButtonEnabled(false)
         }
         binding.pathTv.text = currentFile.absolutePath
         binding.pathTv.isSelected = true
-        displayFiles(viewModel.findFiles(currentFile))
+        viewModel.displayFiles(viewModel.findFiles(currentFile))
     }
 
     private fun switchBackButtonEnabled(enabled: Boolean) {
@@ -170,10 +171,6 @@ class MainActivity : AppCompatActivity() {
                 backButton.isEnabled = true
             }
         }
-    }
-
-    private fun displayFiles(files: ArrayList<File>){
-        viewModel.displayFiles(files)
     }
 
 }
