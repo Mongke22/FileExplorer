@@ -7,6 +7,8 @@
     android:orientation="vertical"
     tools:context=".presentation.MainActivity">
 
+
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -112,7 +114,20 @@
         </androidx.cardview.widget.CardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
+    <ProgressBar
+        android:id="@+id/pgLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        />
+    <TextView
+        android:id="@+id/tvNoData"
+        android:text="No data"
+        android:gravity="center"
+        android:textSize="40sp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFiles"
         android:layout_width="match_parent"

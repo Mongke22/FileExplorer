@@ -21,26 +21,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = FileRepositoryImpl(application)
     private val getModifiedFiles = GetModifiedFilesListUseCase(repository)
 
-    private val _modifiedFiles = MutableLiveData<ArrayList<File>>(null)
-    val modifiedFiles: LiveData<ArrayList<File>?>
+    //Список модифицированных файлов. Получается один раз при запуске приложения
+    private val _modifiedFiles = MutableLiveData<MutableList<File>>(null)
+    val modifiedFiles: LiveData<MutableList<File>?>
         get() = _modifiedFiles
 
-    private val _filesToShow = MutableLiveData<ArrayList<File>>()
-    val filesToShow: LiveData<ArrayList<File>>
+    //Список, который нужно отобразить в еткущий момент
+    private val _filesToShow = MutableLiveData<MutableList<File>>()
+    val filesToShow: LiveData<MutableList<File>>
         get() = _filesToShow
 
+    /*
+    * fromMaxToMin - направление сортировки
+    * filter - тип применяемого фильтра
+    * comparator - компаратор, которые используется при фильтрации, зависит от filter
+    * */
     var fromMaxToMin = false
     private var filter = Filter.FileName
     private var comparator =
         Comparator { file1: File, file2: File -> file1.name.compareTo(file2.name) }
 
+    //Функция получается список изменнных файлов со времени прыдудщего запуска приложения
     fun getModifiedFiles() {
-        _modifiedFiles
         viewModelScope.launch(Dispatchers.Default) {
             _modifiedFiles.postValue(getModifiedFiles.invoke())
         }
     }
 
+    //Применяется фильтр к компаратору
     fun setFilter(newFilter: Filter){
         filter = newFilter
         comparator = when (filter) {
@@ -68,30 +76,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
-        displayFiles(ArrayList(filesToShow.value ?: ArrayList()))
+        displayFiles(filesToShow.value ?: mutableListOf())
     }
 
+    //Возвращает текущий фильтр
     fun getFilter(): Filter{
         return filter
     }
 
-
-    fun findFiles(file: File): ArrayList<File> {
-        val result = ArrayList<File>()
-        val files = file.listFiles()
-        if (files != null) {
-            result.addAll(files)
-        }
-        return result
-    }
-
+    //Смена направления сортировки
     fun switchSortDirection() {
         fromMaxToMin = !fromMaxToMin
-        displayFiles(ArrayList(filesToShow.value ?: ArrayList()))
+        displayFiles(filesToShow.value ?: mutableListOf())
     }
 
-    fun displayFiles(files: ArrayList<File>) {
-        Log.i("files", files.toString())
+    //Записывает список для отображения в liveData
+    fun displayFiles(files: MutableList<File>) {
         if (fromMaxToMin)
             files.sortWith(comparator.reversed())
         else files.sortWith(comparator)

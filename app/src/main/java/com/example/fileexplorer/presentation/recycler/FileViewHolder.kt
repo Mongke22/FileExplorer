@@ -20,12 +20,17 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
     private var time: TextView = view.findViewById(R.id.tvFileCreationTime)
     private var picture: ImageView = view.findViewById(R.id.imgFileType)
 
+    /*
+    * Установка имени и иконки в соответствии с расширением
+    * isSelected заставляет текст двигаться
+    * */
     fun setName(file: File) {
         name.isSelected = true
         name.text = file.name
         picture.setImageResource(getPictureByFileType(file))
     }
 
+    //Установка размера файла, для папки - количество элементов в ней
     fun setSize(file: File) {
         var sizeString =
             Formatter.formatShortFileSize(view.context, Files.size(Paths.get(file.absolutePath)))
@@ -41,6 +46,8 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         size.text = sizeString
     }
 
+    //Время находится в атрибутах файла, конвертируется во время текущей локации и
+    //с помощью форматера отображается в нужном виде
     fun setTime(file: File) {
         val attr =
             Paths.get(file.absolutePath).readAttributes<BasicFileAttributes>()
@@ -50,6 +57,7 @@ class FileViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 
     }
 
+    //Установка картинки в соответствии с расширением
     private fun getPictureByFileType(file: File): Int {
         return if (file.isDirectory) {
             R.drawable.folder

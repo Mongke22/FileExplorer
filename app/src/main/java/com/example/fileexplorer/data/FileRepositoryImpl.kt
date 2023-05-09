@@ -23,12 +23,19 @@ class FileRepositoryImpl(private val application: Application) : FileRepository 
     }
 
     private suspend fun checkIfModified(file: File) {
+        //Вычисление хеша для конкретного файла
         val hash = hashCode(file)
         if (file.isDirectory) {
             for (singleFile in file.listFiles() ?: emptyArray()) {
                 checkIfModified(singleFile)
             }
         } else {
+            /*
+            * Сравнение с существующим хешем в таблице, если
+            * такой файл уже был добавлен в базу.
+            * Если не был добавен - добавляется. Считается
+            * изменнным
+            */
             if (filesDao.checkFileExists(file.absolutePath) == 1) {
                 if (filesDao.getFileHashCode(file.absolutePath) !=
                     hash
