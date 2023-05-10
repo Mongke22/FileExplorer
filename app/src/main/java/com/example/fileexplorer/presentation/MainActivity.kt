@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                 backButton.setColorFilter(Color.GRAY)
                 backButton.isEnabled = false
             } else {
-                backButton.setColorFilter(Color.YELLOW)
+                backButton.setColorFilter(resources.getColor(R.color.orange))
                 backButton.isEnabled = true
             }
         }
